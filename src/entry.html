@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=yes"
+    />
+    <title>Item Eintragen - Pile of Shame</title>
+    <link rel="stylesheet" href="output.css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-slate-500 font-semibold">
+    <header class="bg-slate-700 p-5 flex-col text-center">
+      <h1 class="text-8xl font-bold text-slate-300">Pile of Shame</h1>
+      <nav>
+        <ul>
+          <li class="flex flex-col items-center">
+            <a href="../index.html" class="text-slate-400">Startseite</a>
+            <a href="about.html" class="text-slate-400">About</a>
+            <a href="entry.html" class="text-slate-400">Item Eintragen</a>
+            <a href="overview.html" class="text-slate-400">Übersicht</a>
+          </li>
+        </ul>
+      </nav>
+    </header>
+
+    <main class="gap-2 p-8">
+      <section class="bg-slate-300 p-5">
+        <img id="imagePreview" class="hidden" />
+        <h2 class="text-2xl font-bold text-slate-700">Item Eintragen</h2>
+        <form>
+          <!-- Titel des Items -->
+          <div>
+            <label for="title" class="text-sm font-medium text-gray-700"
+              >Titel des Items</label
+            >
+            <input
+              type="text"
+              id="title"
+              name="title"
+              class="w-full rounded-md"
+            />
+          </div>
+
+          <!-- Beschreibung -->
+          <div>
+            <label for="description" class="text-sm font-medium text-gray-700"
+              >Beschreibung</label
+            >
+            <textarea
+              id="description"
+              name="description"
+              rows="4"
+              class="w-full rounded-md"
+            ></textarea>
+          </div>
+
+          <!-- Kaufpreis -->
+          <div>
+            <label for="price" class="text-sm font-medium text-gray-700"
+              >Kaufpreis (€)</label
+            >
+            <input
+              type="number"
+              id="price"
+              name="price"
+              min="0"
+              step="0.01"
+              class="w-full rounded-md"
+            />
+          </div>
+
+          <!-- Kaufdatum -->
+          <div>
+            <label for="purchase-date" class="text-sm font-medium text-gray-700"
+              >Kaufdatum</label
+            >
+            <input
+              type="date"
+              id="purchase-date"
+              name="purchase_date"
+              class="w-full rounded-md"
+            />
+          </div>
+
+          <!-- Mehrfachauswahl für Kategorien -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700"
+              >Kategorien</label
+            >
+            <fieldset class="mt-2 space-y-2">
+              <div class="flex items-center">
+                <input
+                  type="checkbox"
+                  id="category-book"
+                  name="categories[]"
+                  value="Buch"
+                  class="appearance-none w-4 h-4 border-2 border-slate-700 bg-white rounded checked:bg-slate-500"
+                />
+                <label for="category-book" class="ml-2 text-sm text-gray-900"
+                  >Buch</label
+                >
+              </div>
+              <div class="flex items-center">
+                <input
+                  type="checkbox"
+                  id="category-game"
+                  name="categories[]"
+                  value="Game"
+                  class="appearance-none w-4 h-4 border-2 border-slate-700 bg-white rounded checked:bg-slate-500"
+                />
+                <label for="category-game" class="ml-2 text-sm text-gray-900"
+                  >Game</label
+                >
+              </div>
+              <div class="flex items-center">
+                <input
+                  type="checkbox"
+                  id="category-boardgame"
+                  name="categories[]"
+                  value="Brettspiel"
+                  class="appearance-none w-4 h-4 border-2 border-slate-700 bg-white rounded checked:bg-slate-500"
+                />
+                <label
+                  for="category-boardgame"
+                  class="ml-2 text-sm text-gray-900"
+                  >Brettspiel</label
+                >
+              </div>
+              <div class="flex items-center">
+                <input
+                  type="checkbox"
+                  id="category-movie"
+                  name="categories[]"
+                  value="Film"
+                  class="appearance-none w-4 h-4 border-2 border-slate-700 bg-white rounded checked:bg-slate-500"
+                />
+                <label for="category-movie" class="ml-2 text-sm text-gray-900"
+                  >Film</label
+                >
+              </div>
+              <div class="flex items-center">
+                <input
+                  type="checkbox"
+                  id="category-series"
+                  name="categories[]"
+                  value="Serie"
+                  class="appearance-none w-4 h-4 border-2 border-slate-700 bg-white rounded checked:bg-slate-500"
+                />
+                <label for="category-series" class="ml-2 text-sm text-gray-900"
+                  >Serie</label
+                >
+              </div>
+              <div class="flex items-center">
+                <input
+                  type="checkbox"
+                  id="category-music"
+                  name="categories[]"
+                  value="Musikalbum"
+                  class="appearance-none w-4 h-4 border-2 border-slate-700 bg-white rounded checked:bg-slate-500"
+                />
+                <label for="category-music" class="ml-2 text-sm text-gray-900"
+                  >Musikalbum</label
+                >
+              </div>
+            </fieldset>
+          </div>
+
+          <!-- Bildupload -->
+          <div>
+            <label
+              for="fileInput"
+              class="block text-sm font-medium text-gray-700"
+              >Bildupload</label
+            >
+            <input
+              type="file"
+              id="fileInput"
+              name="image"
+              accept=".png, .jpg"
+              class="rounded-md sm:text-sm"
+            />
+            <!-- Vorschau-Bild -->
+            <img id="imagePreview" class="hidden mt-4" />
+
+            <!-- TypeScript-Skript einbinden -->
+            <script type="module" src="scripts/imagePreview.js"></script>
+          </div>
+
+          <!-- Button zum Testen der Validierung -->
+          <div>
+            <button
+              id="validateButton"
+              type="button"
+              class="w-full py-2 bg-slate-700 text-white font-medium rounded-md hover:bg-slate-800"
+            >
+              Validieren
+            </button>
+
+            <!-- TypeScript-Skript einbinden -->
+            <script type="module" src="scripts/event-listener.js"></script>
+          </div>
+        </form>
+      </section>
+    </main>
+
+    <footer class="text-center bg-slate-700 text-slate-400 p-5">
+      <p><a href="impressum.html">Impressum</a></p>
+    </footer>
+  </body>
+</html>

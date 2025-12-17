@@ -1,0 +1,31 @@
+/* Styling für Header */
+header {
+  background-color: #112a3d;
+  padding: 20px;
+  display: flex;
+  flex-direction: column; /* Elemente von oben nach unten ausrichten. */
+  align-items: center; /* Elemente mittig im Container ausrichten. */
+  justify-content: center; /* Elemente an der Mitte des Containers ausrichten. */
+}
+header h1 {
+  color: #96bae2;
+  font-size: 5em;
+  margin: 0;
+}
+/* Prefers-color-scheme (Light/Dark Mode) */
+@media (prefers-color-scheme: light) {
+  header {
+    background-color: #dae4f2;
+  }
+  header h1 {
+    color: #1e7894;
+  }
+}
+@media (prefers-color-scheme: dark) {
+  header {
+    background-color: #1f2937;
+  }
+  header h1 {
+    color: #96bae2;
+  }
+}

@@ -1,0 +1,22 @@
+/* Styling für Navigation */
+nav ul li {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+nav ul li a {
+  text-decoration: none;
+}
+
+/* Prefers-color-scheme (Light/Dark Mode) */
+@media (prefers-color-scheme: light) {
+  nav ul li a {
+    color: #23304b;
+  }
+}
+@media (prefers-color-scheme: dark) {
+  nav ul li a {
+    color: #9ca3af;
+  }
+}

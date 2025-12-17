@@ -1,0 +1,18 @@
+/* Styling für section */
+section {
+  display: flex;
+  flex-direction: column;
+  padding: 15px;
+  max-width: 500px;
+}
+/* Prefers-color-scheme (Light/Dark Mode) */
+@media (prefers-color-scheme: light) {
+  section {
+    background-color: #b5cfe0;
+  }
+}
+@media (prefers-color-scheme: dark) {
+  section {
+    background-color: #99aab5;
+  }
+}
