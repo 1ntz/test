@@ -4,7 +4,7 @@ const sendButton = document.getElementById("validateButton");
 const trackInput = document.getElementById("title");
 const timeInput = document.getElementById("price");
 
-// ✅ Your real Vercel function endpoint:
+// Vercel function endpoint:
 const BACKEND_URL = "https://drive-upload-backend-ten.vercel.app/api/upload";
 
 sendButton.addEventListener("click", async () => {
