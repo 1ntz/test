@@ -1,74 +1,448 @@
-<!doctype html>
-<html lang="de">
-  <head>
-    <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, user-scalable=yes"
-    />
-    <title>Send File</title>
-    <link rel="stylesheet" href="output.css" />
-    <script src="https://cdn.tailwindcss.com"></script>
-  </head>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Submit Time Trial</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <body class="bg-slate-500 font-semibold">
-    <header class="bg-slate-700 p-5 text-center">
-      <h1 class="text-8xl font-bold text-slate-300">Upload .rkg</h1>
-    </header>
+<style>
+  body {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    background: #02060a;
+    color: #e0e6f0;
+  }
+  .card {
+    max-width: 600px;
+    margin: 20px auto;
+    background: #111c28;
+    border: 1px solid #273446;
+    padding: 16px;
+  }
+  label {
+    display: block;
+    margin-top: 10px;
+    font-size: 12px;
+  }
+  input, select {
+    width: 100%;
+    padding: 6px;
+    margin-top: 4px;
+    background: #0b1620;
+    color: #e0e6f0;
+    border: 1px solid #273446;
+  }
+  button {
+    margin-top: 14px;
+    padding: 8px;
+    background: #203755;
+    color: #ffe28a;
+    border: 1px solid #374764;
+    cursor: pointer;
+  }
+  button:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+  .status {
+    margin-top: 12px;
+    font-size: 12px;
+  }
+  .ok { color: #9cff9c; }
+  .err { color: #ff8080; }
+</style>
+</head>
 
-    <main class="gap-2 p-8">
-      <section class="bg-slate-300 p-5">
-        <h2 class="text-2xl font-bold text-slate-700 mb-4">Entry</h2>
+<body>
 
-        <form>
-          <!-- Track -->
-          <div class="mb-3">
-            <label for="title" class="text-sm font-medium text-gray-700">Track</label>
-            <input
-              type="text"
-              id="title"
-              class="w-full rounded-md"
-            />
-          </div>
+<div class="card">
+  <h2>Submit Time Trial</h2>
 
-          <!-- Time -->
-          <div class="mb-3">
-            <label for="price" class="text-sm font-medium text-gray-700">Time</label>
-            <input
-              type="text"
-              id="price"
-              class="w-full rounded-md"
-            />
-          </div>
+  <form id="submitForm">
+    <label>Track</label>
+    <select id="track" required></select>
 
-          <!-- File -->
-          <div class="mb-4">
-            <label for="fileInput" class="block text-sm font-medium text-gray-700">
-              File upload
-            </label>
-            <input
-              type="file"
-              id="fileInput"
-              accept=".rkg"
-              class="rounded-md sm:text-sm"
-            />
-          </div>
+    <label>Player</label>
+    <input id="player" required>
 
-          <!-- Send -->
-          <button
-            id="validateButton"
-            type="button"
-            class="w-full py-2 bg-slate-700 text-white font-medium rounded-md hover:bg-slate-800"
-          >
-            Send
-          </button>
-        </form>
-      </section>
-    </main>
+    <label>Time (M:SS.mmm)</label>
+    <input id="time" placeholder="1:23.456" required>
 
-    <footer class="text-center bg-slate-700 text-slate-400 p-5"></footer>
+    <!-- ✅ Removed manual date input -->
 
-    <!-- script -->
-    <script type="module" src="scripts/upload.js"></script>
-  </body>
+    <label>Ghost (.rkg, max 10 KB) (recommended)</label>
+    <input type="file" id="rkg" accept=".rkg">
+
+    <button type="submit">Submit</button>
+    <div id="status" class="status"></div>
+  </form>
+</div>
+
+<script>
+/* ===== CONFIG ===== */
+const WORKER_URL = "https://mkds-submit-proxy.zachdashermk.workers.dev/";
+const UPLOAD_URL = "https://test-two-brown-81.vercel.app/api/upload";
+
+/* ===== TRACK LIST ===== */
+const trackNames = [
+  "SNES Mario Circuit 1",
+  "SNES Donut Plains 1",
+  "Beta Donut Plains 1",
+  "SNES Ghost Valley 1",
+  "SNES Bowser Castle 1",
+  "SNES Mario Circuit 2",
+  "SNES Choco Island 1",
+  "SNES Ghost Valley 2",
+  "SNES Donut Plains 2",
+  "Beta Donut Plains 2",
+  "SNES Bowser Castle 2",
+  "SNES Mario Circuit 3",
+  "SNES Koopa Beach 1",
+  "SNES Choco Island 2",
+  "SNES Vanilla Lake 1",
+  "SNES Bowser Castle 3",
+  "Tour Bowser Castle 3",
+  "SNES Mario Circuit 4",
+  "SNES Donut Plains 3",
+  "SNES Koopa Beach 2",
+  "SNES Ghost Valley 3",
+  "SNES Vanilla Lake 2",
+  "SNES Rainbow Road",
+  "SNES Rainbow Road U",
+  "N64 Luigi Raceway",
+  "N64 Moo Moo Farm",
+  "N64 Koopa Troopa Beach",
+  "N64 Kalimari Desert",
+  "N64 Toad's Turnpike",
+  "N64 Frappe Snowland",
+  "N64 Choco Mountain",
+  "Tour Choco Mountain",
+  "N64 Mario Raceway",
+  "N64 Wario Stadium",
+  "N64 Sherbet Land",
+  "N64 Royal Raceway",
+  "Wii U Royal Raceway",
+  "N64 Bowser's Castle",
+  "N64 DK's Jungle Parkway",
+  "N64 Yoshi Valley",
+  "N64 Banshee Boardwalk",
+  "N64 Rainbow Road",
+  "GBA Peach Circuit",
+  "Tour Peach Circuit",
+  "GBA Shy Guy Beach",
+  "GBA Riverside Park",
+  "Tour Riverside Park",
+  "GBA Bowser Castle 1",
+  "GBA Mario Circuit",
+  "GBA Mario Circuit U",
+  "GBA Boo Lake",
+  "Tour Boo Lake",
+  "GBA Cheese Land",
+  "Wii U Cheese Land",
+  "GBA Bowser Castle 2",
+  "GBA Luigi Circuit",
+  "GBA Sky Garden",
+  "Tour Sky Garden",
+  "GBA Cheep-Cheep Island",
+  "Tour Cheep-Cheep Island",
+  "GBA Sunset Wilds",
+  "Tour Sunset Wilds",
+  "GBA Snow Land",
+  "Tour Snow Land",
+  "GBA Ribbon Road",
+  "Wii U Ribbon Road",
+  "GBA Yoshi Desert",
+  "GBA Bowser Castle 3",
+  "GBA Lakeside Park",
+  "Tour Lakeside Park",
+  "GBA Broken Pier",
+  "GBA Bowser Castle 4",
+  "GBA Rainbow Road",
+  "GBA Rainbow Road DX",
+  "GCN Luigi Circuit",
+  "GCN Peach Beach",
+  "GCN Baby Park",
+  "Wii U Baby Park",
+  "GCN Dry Dry Desert",
+  "Wii U Dry Dry Desert",
+  "GCN Mushroom Bridge",
+  "GCN Mario Circuit",
+  "GCN Daisy Cruiser",
+  "GCN Waluigi Stadium",
+  "GCN Sherbet Land",
+  "Wii U Sherbet Land",
+  "GCN Mushroom City",
+  "GCN Yoshi Circuit",
+  "GCN DK Mountain",
+  "GCN Wario Colosseum",
+  "GCN Dino Dino Jungle",
+  "GCN Bowser's Castle",
+  "GCN Rainbow Road",
+  "DS Figure 8 Circuit",
+  "DS Yoshi Falls",
+  "DS Cheep Cheep Beach",
+  "DS Luigi's Mansion",
+  "DS Desert Hills",
+  "DS Delfino Square",
+  "Beta Delfino Square",
+  "DS Waluigi Pinball",
+  "DS Shroom Ridge",
+  "SW Shroom Ridge",
+  "DS DK Pass",
+  "DS Tick-Tock Clock",
+  "Wii U Tick-Tock Clock",
+  "DS Mario Circuit",
+  "DS Airship Fortress",
+  "DS Wario Stadium",
+  "DS Peach Gardens",
+  "DS Bowser Castle",
+  "DS Rainbow Road",
+  "Wii Luigi Circuit",
+  "Wii Moo Moo Meadows",
+  "Wii Mushroom Gorge",
+  "Wii Toad's Factory",
+  "Wii Mario Circuit",
+  "Wii Coconut Mall",
+  "Wii DK Summit",
+  "Tour DK Summit",
+  "Wii Wario's Gold Mine",
+  "Wii Daisy Circuit",
+  "Wii Koopa Cape",
+  "Wii Maple Treeway",
+  "Wii Grumble Volcano",
+  "Wii Dry Dry Ruins",
+  "Beta Dry Dry Ruins",
+  "Wii Moonview Highway",
+  "Wii Bowser's Castle",
+  "Wii Rainbow Road",
+  "3DS Toad Circuit",
+  "3DS Daisy Hills",
+  "3DS Cheep Cheep Lagoon",
+  "3DS Shy Guy Bazaar",
+  "3DS Wuhu Loop",
+  "3DS Mario Circuit",
+  "3DS Music Park",
+  "3DS Rock Rock Mountain",
+  "3DS Piranha Plant Slide",
+  "3DS Wario's Shipyard",
+  "3DS Neo Bowser City",
+  "3DS Maka Wuhu",
+  "3DS DK Jungle",
+  "3DS Rosalina's Ice World",
+  "3DS Bowser's Castle",
+  "3DS Rainbow Road",
+  "Wii U Mario Kart Stadium",
+  "Wii U Sweet Sweet Canyon",
+  "Wii U Thwomp Ruins",
+  "Wii U Mario Circuit",
+  "Wii U Toad Harbor",
+  "Wii U Twisted Mansion",
+  "Wii U Shy Guy Falls",
+  "Wii U Dolphin Shoals",
+  "Wii U Electrodrome",
+  "Wii U Mount Wario",
+  "Wii U Cloudtop Cruise",
+  "Wii U Bone-Dry Dunes",
+  "Wii U Bowser's Castle",
+  "Wii U Rainbow Road",
+  "Wii U Mute City",
+  "Wii U Excitebike Arena",
+  "Wii U Hyrule Circuit",
+  "Wii U Wild Woods",
+  "Wii U Animal Crossing",
+  "Wii U Super Bell Subway",
+  "Wii U Big Blue",
+  "SW Sky-High Sundae",
+  "SW Yoshi's Island",
+  "Tour Tokyo Blur",
+  "Tour Vancouver Velocity",
+  "Tour Singapore Speedway",
+  "Tour Madrid Drive",
+  "Tour Merry Mountain",
+  "Tour Ninja Hideaway",
+  "RMX Mario Circuit 1",
+  "RMX Choco Island 1",
+  "RMX Rainbow Road 1",
+  "RMX Rainbow Road 2",
+  "RMX Vanilla Lake 1",
+  "RMX Vanilla Lake 2",
+  "RMX Ghost Valley 1",
+  "RMX Bowser Castle 1",
+  "RMX Donut Plains 1",
+  "GP Mario Beach",
+  "GP Mario Highway",
+  "GP DK Jungle",
+  "GP Bananan Ruins",
+  "GP Snow Panic",
+  "GP Bowser's Castle",
+  "GP Castle Wall",
+  "GP Rainbow Coaster",
+  "GP2 Stadium Arena",
+  "SW2 Mario Bros. Circuit",
+  "SW2 Whistlestop Summit",
+  "SW2 Cheep Cheep Falls",
+  "Beta Dokan Course",
+  "Beta Nokonoko Beach",
+  "SW2 Faraway Oasis",
+  "SW2 Crown City"
+];
+
+const trackSel = document.getElementById("track");
+trackNames.forEach(t => {
+  const o = document.createElement("option");
+  o.value = t;
+  o.textContent = t;
+  trackSel.appendChild(o);
+});
+
+/* ===== VALIDATION ===== */
+function isValidTime(t) {
+  return /^\d{1,2}:\d{2}\.\d{3}$/.test(t);
+}
+
+/* ===== DUPLICATE SUBMISSION KEY ===== */
+function submissionKey(track, player, time, runDate) {
+  return `${track}||${player.toLowerCase()}||${time}||${runDate}`;
+}
+
+/* ===== SUBMIT HANDLER ===== */
+document.getElementById("submitForm").addEventListener("submit", async e => {
+  e.preventDefault();
+
+  const status = document.getElementById("status");
+  const submitBtn = e.target.querySelector("button[type='submit']");
+  status.textContent = "";
+  status.className = "status";
+
+  const track  = trackSel.value;
+  const player = document.getElementById("player").value.trim();
+  const time   = document.getElementById("time").value.trim();
+  const file   = document.getElementById("rkg").files[0] || null;
+
+  if (!player || !isValidTime(time)) {
+    status.textContent = "Invalid input.";
+    status.classList.add("err");
+    return;
+  }
+
+  if (file) {
+    if (!file.name.toLowerCase().endsWith(".rkg")) {
+      status.textContent = "Ghost must be a .rkg file.";
+      status.classList.add("err");
+      return;
+    }
+    if (file.size > 10 * 1024) {
+      status.textContent = "Ghost exceeds 10 KB.";
+      status.classList.add("err");
+      return;
+    }
+  }
+
+  submitBtn.disabled = true;
+  submitBtn.textContent = "Submitting…";
+
+  try {
+    let driveFileId = "";
+    let driveFileName = "";
+    let runDate = "";     // ✅ will come from RKG if provided
+    let rkgDate = "";
+
+    /* ===== 1) UPLOAD GHOST TO VERCEL (and extract date) ===== */
+    if (file) {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("track", track);
+      fd.append("player", player);
+      fd.append("time", time);
+
+      const uploadRes = await fetch(UPLOAD_URL, {
+        method: "POST",
+        body: fd
+      });
+
+      // If backend returned useful error details, show them
+      if (!uploadRes.ok) {
+        const txt = await uploadRes.text().catch(() => "");
+        throw new Error(txt || "Ghost upload failed.");
+      }
+
+      const uploadJson = await uploadRes.json();
+
+      // Your backend currently returns: { filename, fileId, driveLink, rkgDate }
+      // Note: it returns "filename" not "fileName"
+      rkgDate = uploadJson.rkgDate || "";
+      driveFileId = uploadJson.fileId || "";
+      driveFileName = uploadJson.filename || "";
+
+      // ✅ Convert dd.mm.yyyy → yyyy-mm-dd for consistent backend storage (optional)
+      // If your worker expects dd.mm.yyyy, remove this conversion and use rkgDate directly.
+      if (rkgDate && /^\d{2}\.\d{2}\.\d{4}$/.test(rkgDate)) {
+        const [dd, mm, yyyy] = rkgDate.split(".");
+        runDate = `${yyyy}-${mm}-${dd}`;
+      } else {
+        runDate = "";
+      }
+
+      if (!runDate) {
+        // If you REQUIRE RKG date when a file is attached:
+        throw new Error("Could not extract date from .rkg file.");
+      }
+    } else {
+      // ✅ No RKG provided. Choose ONE behavior:
+
+      // Behavior 1: allow submit and default to today
+      runDate = new Date().toISOString().slice(0, 10);
+
+      // Behavior 2 (stricter): block if no file
+      // throw new Error("Please attach a .rkg ghost so the run date can be extracted.");
+    }
+
+    // Prevent exact duplicate submission (includes runDate)
+    const key = submissionKey(track, player, time, runDate);
+    const lastKey = localStorage.getItem("lastSubmissionKey");
+    if (lastKey === key) {
+      status.textContent = "You already submitted this exact time for this track and date.";
+      status.classList.add("err");
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Submit";
+      return;
+    }
+
+    /* ===== 2) SEND METADATA TO GAS VIA WORKER ===== */
+    const res = await fetch(WORKER_URL + "?action=submitPublic", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        track,
+        player,
+        time,
+        runDate,        // ✅ now automatic
+        driveFileId,
+        driveFileName
+      })
+    });
+
+    if (!res.ok) {
+      const txt = await res.text().catch(() => "");
+      throw new Error(txt || "Submission failed.");
+    }
+
+    localStorage.setItem("lastSubmissionKey", key);
+
+    status.textContent = file
+      ? `Time submitted! Run date extracted from RKG: ${rkgDate || runDate}`
+      : `Time submitted! (No RKG provided; date set to ${runDate})`;
+    status.classList.add("ok");
+
+  } catch (err) {
+    status.textContent = err?.message || "Network error.";
+    status.classList.add("err");
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = "Submit";
+  }
+});
+</script>
+
+</body>
 </html>
